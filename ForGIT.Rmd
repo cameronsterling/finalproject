@@ -1,0 +1,306 @@
+---
+title: "Version for GitHub"
+author: "Cameron Sterling"
+date: "`r Sys.Date()`"
+output: html_document
+---
+# R Setup and Processing the Data
+```{r}
+library(usethis)
+use_git()
+```
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Loading necessary packages
+library(tidyverse)
+library(readr)
+library(knitr)
+library(spdep)
+library(tmap)
+library(MASS) 
+library(ggplot2)
+library(gstat)
+library(sp)
+library(tidycensus)
+library(spgwr)
+library(GWmodel)
+library(lme4)
+library(readxl)
+library(spdep)
+library(tigris)
+library(sf)
+library(spdep)
+library(sf)
+library(spatialreg)
+library(RColorBrewer)
+
+# Loading the Data
+df_work <- read_excel("Final_DAC_Attributes_Mean_TCC_demografics_CSterling.xlsx", 
+    sheet = "Final_DAC_Attributes_Mean_TCC")
+df_heat <- read_excel("HHI Data 2024 United States.xlsx")
+heat_ny <- df_heat %>% filter(STATE == "NY")
+
+
+# Creating some necessary variables, making sure everything is numeric and ready to go
+df_work$Outdoor_workers <- df_work$S2404_C01_002E + df_work$S2404_C01_005E
+df_work$perc_outdoor <- (df_work$Outdoor_workers / df_work$S2404_C01_001E) *100
+
+df_work$GEOID <- df_work$GEOID...1
+
+
+df_work$MI_Rates <- as.numeric(df_work$MI_Rates)
+df_work$MI_Rates_prep <- df_work$MI_Rates / 100
+df_work$normal_MI_Rates <- qnorm(df_work$MI_Rates_prep)
+df_work$normal_MI_Rates <- df_work$normal_MI_Rates + 4
+
+# Loading Crosswalk Files to Unify Geographic Units
+zcta_to_tract20 <- read.delim(
+  "zctatotract2020.txt", header = TRUE, sep = "|", colClasses = c("character", "character", "character"))
+
+twenty_to_10 <- read.delim("/Users/cameronsterling/Downloads/Applied Statistical Methods/tab20_tract20_tract10_st36.txt", header = TRUE, sep = "|", colClasses= "character")
+
+df_heat_tract20 <- zcta_to_tract20 %>%
+  right_join(heat_ny, by = c("GEOID_ZCTA5_20" = "ZCTA" ))
+
+df_to2010 <- twenty_to_10 %>% 
+  merge(df_heat_tract20, by ="GEOID_TRACT_20")
+
+df_combined <- df_to2010 %>%
+  merge(df_work, by.x = "GEOID_TRACT_10", by.y = "GEOID...1")
+
+# Removing Duplicates and NA Values
+df_combined <- unique(df_combined)
+
+df_combined <- df_combined %>%
+  distinct(GEOID_TRACT_10, .keep_all = TRUE) 
+
+rownames(df_combined) <- df_combined$GEOID_TRACT_10
+
+# Adding Geometry to the Dataset
+ny_tracts <- tracts(state = "NY", cb = FALSE, year = 2010)
+
+
+ny_tracts_mapped <- ny_tracts %>%
+  merge(df_combined, by.x = "GEOID10", by.y = "GEOID_TRACT_10", all.x = FALSE)
+
+df_combined$normal_MI_Rates[!is.finite(df_combined$normal_MI_Rates)] <- NA
+data_no_geom <- st_drop_geometry(ny_tracts_mapped) 
+
+required_vars <- c("MI_Rates", "perc_outdoor", "P_NEHD", "TCC_2021", "SOCIODEM_SCORE", "PM25")
+
+complete_rows <- complete.cases(data_no_geom[, required_vars])
+ny_tracts_mapped_clean <- ny_tracts_mapped[complete_rows, ]
+
+nrow(ny_tracts_mapped_clean)
+
+ny_tracts_mapped_clean <- cbind(ny_tracts_mapped_clean, 
+                                st_coordinates(st_centroid(ny_tracts_mapped_clean)))
+
+
+```
+
+# Code for Summary Statistics
+```{r}
+
+ggplot(data = ny_tracts_mapped) +
+  geom_sf(aes(fill = perc_outdoor), color = NA) +
+  scale_fill_viridis_c(option = "viridis", name = "% Outdoor") +
+  theme_minimal() +
+  labs(
+    title = "Percentage Outdoor Workers by Census Tract (2010)",
+    subtitle = "New York State",
+  )
+
+
+ggplot(data = ny_tracts_mapped) +
+  geom_sf(aes(fill = normal_MI_Rates), color = NA) +
+  scale_fill_viridis_c(option = "viridis", name = "% Outdoor") +
+  theme_minimal() +
+  labs(
+    title = "Relative extremity of heart attack ER visit rates",
+    subtitle = "New York State",
+  )
+
+ggplot(data = ny_tracts_mapped) +
+  geom_sf(aes(fill = P_NEHD), color = NA) +
+  scale_fill_viridis_c(option = "viridis", name = "% Outdoor") +
+  theme_minimal() +
+  labs(
+    title = "Number of Hot Days",
+    subtitle = "New York State",
+  )
+
+ df_combined$PR_NEHD <- as.numeric(df_combined$PR_NEHD )
+ df_combined$MI_Rates <- as.numeric(df_combined$MI_Rates )
+
+df_combined$P_NEHD[df_combined$P_NEHD == -999.0000] <- NA
+
+ggplot(df_combined, aes(x = perc_outdoor, y = MI_Rates, color = Urb_Rural)) +
+  geom_point(size = 1) +
+  geom_smooth(method = "lm", se = FALSE, aes(group = Urb_Rural), linetype = "solid") + # Separate regression lines
+  scale_color_manual(values = c("urban" = "blue", "rural" = "orange", "suburban" = "green")) +
+  labs(
+    title = "% Population Working Outdoors vs  Adjusted % Rank Heart Attack ER Visits",
+    x = "Percent of Population Working Outdoors",
+    y = "% ranking age-adjusted hospitalizations for heart attacks",
+    color = "Urban/Rural/Suburban"
+  ) +
+  theme_minimal()
+
+              
+```
+# Modeling
+## Creating a baseline model
+```{r}
+mixed_model <- lm(MI_Rates ~ perc_outdoor + P_NEHD + TCC_2021 + SOCIODEM_SCORE + PM25*SOCIODEM_SCORE + TCC_2021*SOCIODEM_SCORE + TCC_2021*PM25 
+                  , data = ny_tracts_mapped_clean)
+
+summary(mixed_model)
+
+
+```
+
+## Moran's I test
+```{r}
+ny_tracts_mapped$MI_Rates[!is.finite(ny_tracts_mapped$MI_Rates)] <- NA
+
+nb <- poly2nb(ny_tracts_mapped, snap = 0.001) 
+weights <- nb2listw(nb, style = "W", zero.policy = TRUE)
+coords <- st_centroid(st_geometry(ny_tracts_mapped))
+
+
+moran_test <- moran.test(ny_tracts_mapped$MI_Rates, weights, zero.policy = TRUE, na.action = na.pass)
+
+print(moran_test)
+
+
+```
+
+## SAR Lag Model
+```{r}
+nb <- poly2nb(ny_tracts_mapped_clean, snap = 0.001)
+isolated_units <- which(card(nb) == 0)  # card() counts neighbors
+
+if (length(isolated_units) > 0) {
+  ny_tracts_mapped_clean <- ny_tracts_mapped_clean[-isolated_units, ]
+  nb <- poly2nb(ny_tracts_mapped_clean)  # Recreate neighbors
+  lw <- nb2listw(nb, style = "W", zero.policy = FALSE)
+}
+
+sar_lag <- lagsarlm(
+  formula = MI_Rates ~ perc_outdoor + P_NEHD + TCC_2021 + 
+            SOCIODEM_SCORE + PM25 * SOCIODEM_SCORE + TCC_2021 * PM25,
+  data = ny_tracts_mapped_clean,
+  listw = lw
+)
+
+summary(sar_lag)
+
+```
+
+## Comparison to Baseline
+```{r}
+fitted_baseline <- fitted(mixed_model) 
+fitted_spatial <- fitted(sar_lag) 
+
+comparison_df <- data.frame(
+    Observed = unlist(ny_tracts_mapped_clean$MI_Rates),
+    Baseline_Fitted = unlist(fitted_baseline),
+    Spatial_Fitted = unlist(fitted_spatial)
+)
+
+ggplot(comparison_df, aes(x = Observed)) +
+  geom_point(aes(y = Baseline_Fitted, color = "Baseline Model"), alpha = 0.6) +
+  geom_point(aes(y = Spatial_Fitted, color = "Spatial Lag Model"), alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  labs(title = "Observed vs. Fitted Values",
+       x = "Observed MI_Rates",
+       y = "Fitted MI_Rates",
+       color = "Model") +
+  theme_minimal()
+
+residuals_baseline <- residuals(mixed_model)
+residuals_spatial <- residuals(sar_lag)
+
+residuals_baseline <- residuals_baseline[1:nrow(ny_tracts_mapped_clean)]
+residuals_spatial <- residuals_spatial[1:nrow(ny_tracts_mapped_clean)]
+
+residual_df <- data.frame(
+  Residuals = c(residuals_baseline, residuals_spatial),
+  Model = rep(c("Baseline Model", "Spatial Lag Model"), each = length(residuals_baseline))
+)
+
+ggplot(residual_df, aes(x = Residuals, fill = Model)) +
+  geom_density(alpha = 0.6) +
+  labs(title = "Residual Distribution",
+       x = "Residuals",
+       y = "Density",
+       fill = "Model") +
+  theme_minimal()
+
+ny_tracts_mapped_clean$residuals_baseline <- residuals_baseline
+ny_tracts_mapped_clean$residuals_spatial <- residuals_spatial
+
+tm_shape(ny_tracts_mapped_clean) +
+  tm_fill("residuals_baseline", title = "Baseline Residuals") +
+  tm_borders() +
+  tm_layout(title = "Residuals from Baseline Model")
+
+tm_shape(ny_tracts_mapped_clean) +
+  tm_fill("residuals_spatial", title = "Spatial Lag Residuals") +
+  tm_borders() +
+  tm_layout(title = "Residuals from Spatial Lag Model")
+
+
+
+```
+
+## Looking Further: GWR and Urban-Rural Problem
+```{r}
+
+gwr_bandwidth <- bw.gwr(
+  formula = MI_Rates ~ perc_outdoor + P_NEHD + TCC_2021 + 
+             SOCIODEM_SCORE + PM25 * SOCIODEM_SCORE + TCC_2021 * PM25,
+  data = ny_tracts_mapped_clean,
+  longlat = FALSE,  
+  approach = "AICc",
+  adapt = TRUE     
+)
+
+print(gwr_bandwidth)
+
+gwr_model <- gwr.basic(
+  formula = MI_Rates ~ perc_outdoor + P_NEHD + TCC_2021 + 
+            SOCIODEM_SCORE + PM25 * SOCIODEM_SCORE + TCC_2021 * PM25,
+  data = ny_tracts_mapped_clean,
+  bw = gwr_bandwidth,
+  longlat = FALSE,  
+  adapt = TRUE     
+)
+
+print(gwr_model)
+
+
+ny_tracts_mapped_clean$gwr_coef_perc_outdoor <- gwr_model$SDF$perc_outdoor
+
+ggplot(data = ny_tracts_mapped_clean) +
+  geom_sf(aes(fill = gwr_coef_perc_outdoor)) +
+  scale_fill_viridis_c() +
+  labs(title = "GWR Coefficients for perc_outdoor",
+       fill = "Coefficient") +
+  theme_minimal()
+
+ny_tracts_mapped_clean$Urb_Rural <- factor(ny_tracts_mapped_clean$Urb_Rural, 
+                                           levels = c("urban", "suburban", "rural"))
+
+ggplot(data = ny_tracts_mapped_clean, aes(x = Urb_Rural, y = gwr_coef_perc_outdoor, fill = Urb_Rural)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 2) +
+  scale_fill_viridis_d(option = "C") + 
+  labs(title = "Boxplot of GWR Coefficients for perc_outdoor by Urb_Rural",
+       x = "Urban-Rural Classification",
+       y = "GWR Coefficients for perc_outdoor",
+       fill = "Urb_Rural") +
+  theme_minimal()
+
+```
