@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2299.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Outdoor Workers in NY State&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;link rel="stylesheet" href="style.css"&gt;<span class="Apple-converted-space"> </span></p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;header&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1&gt;Outdoor Workers in NY State&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;nav&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;a href="index.html"&gt;&lt;/a&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/nav&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;section&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h2&gt;The Problem&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;</p>
+<p class="p1">In most contemporary indexes of social vulnerability, working outside is considered to be a source of vulnerability. In this project, I was interested in evaluating whether or not there was a geographical component in how vulnerable somebody working outdoors is, and whether or not there was an urban-rural narrative to be explored.<span class="Apple-converted-space">  </span>Using data provided by Adamo and Squires (2024), I used comunity level data, asking the question, “How does the percentage of people working outdoors effect community-level health outcomes?” The main health outcome that I operationalized was the rate of ER visits for Heart Attacks — this can often be made more severe or brought about by working outside because of exposure to heat and poor air quality, making it a top candidate for a community-wide health outcome if there were one.<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/p&gt;</p>
+<p class="p2"><span class="Apple-converted-space">  </span></p>
+<p class="p1"><span class="Apple-converted-space">   </span>&lt;p&gt;</p>
+<p class="p1">The first thing that I did was map out my main variables, confirming that there was a spatial element to explore.<span class="Apple-converted-space"> </span></p>
+<p class="p1">&lt;/p&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space"> </span>&lt;img src=“Hot_Days.png" alt=“Number of Hot Days” style="width:100%; max-width:500px; margin:10px 0;"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space"> </span>&lt;img src=“MIRates.png" alt=“Heart Attack Rates” style="width:100%; max-width:500px; margin:10px 0;"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space"> </span>&lt;img src=“percoutdoor.png” alt=“Percent Working Outdoors” style="width:100%; max-width:500px; margin:10px 0;"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/section&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;section&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h2&gt;Looking for the Relationship&lt;/h2&gt;</p>
+<p class="p1">Using a Geographically Weighted Regression (GWR), the results of my prject suggested that communities with higher percentages of outdoor workers were at higher risk of poor health outcomes, and that this was worse in areas that had poor environmental conditions such as low tree cover and poor air quality. The type of model that I used corrected for spatial error, subsuming some other geography-related effects.<span class="Apple-converted-space"> </span></p>
+<p class="p2"><br></p>
+<p class="p1">I then mapped out the coefficients by census tract, aiming to understand where this relationship is the strongest.<span class="Apple-converted-space"> </span></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space"> </span>&lt;img src=“percoutdoorMIrates.png” alt=“Strength of the relationship” style="width:100%; max-width:500px; margin:10px 0;"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;section&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h2&gt;Tech Stack&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>GIS, R (for statistical analysis and regression), and HTML/CSS for documentation.</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/section&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;footer&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;&amp;copy; 2025 Cameron Sterling. All rights reserved.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/footer&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
