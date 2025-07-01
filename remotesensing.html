@@ -22,7 +22,7 @@
   </header>
 
   <section>
-    <h2>Part One: Agricultural Loss</h2>
+    <h2>Part One: Agricultural Degredataion</h2>
     <p>
     In 2018, Turkey and allied forces occupied Afrin, leading to widespread reports of property seizures and agricultural destruction. Given these dynamics, my project asks: How has Afrin’s landscape, especially its olive  orchards, changed since the occupation? And where can we detect signs of degradation? my project has two objectives:
 (1) Map land cover in Afrin in 2016, before major occupation events, with a particular focus on locating orchards.
@@ -30,18 +30,29 @@
 
     </p>
     <p>
-      The first thing that I did was map out my main variables, confirming that there was a spatial element to explore.
+      First, I carried out a RF-based classification based on Sentinel-2 data. I used NDVI, texture, and several color bands. 
     </p>
 
-    <img src="Hot_Days.png" alt="Number of Hot Days" style="width:100%; max-width:500px; margin:10px 0;">
-    <img src="MIRates.png" alt="Heart Attack Rates" style="width:100%; max-width:500px; margin:10px 0;">
-    <img src="percoutdoor.png" alt="Percent Working Outdoors" style="width:100%; max-width:500px; margin:10px 0;">
+    <img src="Screenshot 2025-07-01 at 10.27.51.png" alt="Agricultural Cover" style="width:100%; max-width:500px; margin:10px 0;">
+
+       <p>
+      Then, at the areas that I classified in Syria and Turkey, I looked at key indicators of vegetation health over time, concluding that there was a high level of stress on Syrian orchards.   
+    </p>
+
+    <img src="Screenshot 2025-07-01 at 10.31.49.png" alt="Land Quality" style="width:100%; max-width:500px; margin:10px 0;">
+
+       <p>
+     After that, I created an algorithm that clustered degredation, localizing areas that might have seen deforestation/ environmental stress.    
+    </p>
+
+    <img src="Screenshot 2025-07-01 at 10.34.18.png" alt="Clusters of Degredation" style="width:100%; max-width:500px; margin:10px 0;">
   </section>
 
   <section>
-    <h2>Looking for the Relationship</h2>
+    <h2>Part Two: The Relationship Between Fire and Conflict </h2>
     <p>
-      Using a Geographically Weighted Regression (GWR), the results of my project suggested that communities with higher percentages of outdoor workers were at higher risk of poor health outcomes, and that this was worse in areas that had poor environmental conditions such as low tree cover and poor air quality. The type of model that I used corrected for spatial error, subsuming some other geography-related effects.
+In a separate, but related project, I was interested in learning more about fires in Northern Syria. 
+      I tried to answer the question: can machine learning distinguish between routine and conflict-associated vegetation fires in Northern Syria? 
     </p>
     <p>
       I then mapped out the coefficients by census tract, aiming to understand where this relationship is the strongest.
