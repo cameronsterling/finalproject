@@ -51,13 +51,24 @@
   <section>
     <h2>Part Two: The Relationship Between Fire and Conflict </h2>
     <p>
-In a separate, but related project, I was interested in learning more about fires in Northern Syria. 
+      In a separate, but related project, I was interested in learning more about fires in Northern Syria. 
       I tried to answer the question: can machine learning distinguish between routine and conflict-associated vegetation fires in Northern Syria? 
     </p>
     <p>
-      I then mapped out the coefficients by census tract, aiming to understand where this relationship is the strongest.
+  This project attempted to first identify areas with anomalous levels of fire, and then use clustering to find out if they had similar characteristics. Areas were defined as 5x5 km boxes in Northern Syria. Fire activity is captured using the VIIRS Active Fire product, which detects thermal anomalies from space at 375 meter resolution. We aggregate the number of VIIRS fire detections in each grid cell by month, creating a spatiotemporal record of vegetation fires across Northern Syria. This serves as our primary outcome variable.
+  Areas were then marked as “anomalous” as identified through an isolation forest model with 100 trees. The top 95 percent of anomaly scores were considered as areas with anomalous numbers of fires per month in any given year the distribution of anomaly scores are as follows:
+
     </p>
-    <img src="percoutdoorMIrates.png" alt="Strength of the relationship" style="width:100%; max-width:500px; margin:10px 0;">
+    <img src="Screenshot 2025-07-01 at 10.40.39.png" alt="Fires" style="width:100%; max-width:500px; margin:10px 0;">
+
+      <p>
+ After identifying anomalous fire events, I used the HDBSCAN (Hierarchical Density-Based Spatial Clustering of Applications with Noise) algorithm to group these anomalies based on their shared characteristics. I used a mix of environmental, location, temporal, and conflict data to make the clusters.  The algorithm returned two substantive clusters and a set of outliers labeled as noise. These clusters corresponded to ecologically distinct fire anomalies, with varying levels of precipitation, NDVI, and conflict intensity.
+Notably, directly conflict-related fire anomalies were captured almost exclusively in the noise component of the model, highlighting their irregularity and sparsity.
+These results suggest that while most fire anomalies are routine or environmentally driven, conflict-associated anomalies are consistently present but defy easy categorization due to their variability. Future work could improve model performance and interpretability by incorporating additional covariates, testing different anomaly detection techniques, and integrating higher-resolution fire severity data.
+
+    </p>
+        <img src="Screenshot 2025-07-01 at 10.44.47.png" alt="Fires" style="width:100%; max-width:500px; margin:10px 0;">
+
   </section>
 
   <section>
